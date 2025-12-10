@@ -6,11 +6,24 @@ interface SidebarProps {
   activeModel: ModelId;
   onSelectModel: (id: ModelId) => void;
   onClearChat: () => void;
+  onExportChat: () => void;
   isOpen: boolean;
   toggleSidebar: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeModel, onSelectModel, onClearChat, isOpen, toggleSidebar }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeModel, onSelectModel, onClearChat, onExportChat, isOpen, toggleSidebar }) => {
+  const handleModelSelect = (modelId: ModelId, modelName: string) => {
+    if (activeModel === modelId) {
+      if (window.innerWidth < 768) toggleSidebar();
+      return;
+    }
+
+    if (window.confirm(`Switching neural node to ${modelName}. This will change the active AI persona and context. Continue?`)) {
+      onSelectModel(modelId);
+      if (window.innerWidth < 768) toggleSidebar();
+    }
+  };
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -30,10 +43,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModel, onSelectModel, onClearCh
         <div className="p-6 border-b border-gray-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-              AI
+              AT
             </div>
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-              AITor
+              AI Tor
             </h1>
           </div>
           {/* Mobile close button */}
@@ -45,34 +58,34 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModel, onSelectModel, onClearCh
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           <div>
             <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">
-              Select Model
+              Select Neural Node
             </h2>
             <div className="space-y-2">
               {Object.values(MODELS).map((model) => {
                 const Icon = Icons[model.icon as keyof typeof Icons];
                 const isActive = activeModel === model.id;
+                const isComingSoon = model.isComingSoon;
                 
                 return (
                   <button
                     key={model.id}
-                    onClick={() => {
-                      onSelectModel(model.id);
-                      if (window.innerWidth < 768) toggleSidebar();
-                    }}
+                    onClick={() => handleModelSelect(model.id, model.name)}
                     className={`
                       w-full text-left p-3 rounded-xl transition-all duration-200
                       flex items-start gap-3 group border
                       ${isActive 
                         ? 'bg-gray-800 border-gray-700 shadow-lg' 
                         : 'bg-transparent border-transparent hover:bg-gray-800/50 hover:border-gray-800'}
+                      ${isComingSoon ? 'opacity-70' : 'opacity-100'}
                     `}
                   >
                     <div className={`mt-0.5 ${isActive ? model.themeColor : 'text-gray-400 group-hover:text-gray-200'}`}>
                       <Icon />
                     </div>
                     <div>
-                      <div className={`font-medium text-sm ${isActive ? 'text-white' : 'text-gray-300'}`}>
+                      <div className={`font-medium text-sm flex items-center gap-2 ${isActive ? 'text-white' : 'text-gray-300'}`}>
                         {model.name}
+                        {isComingSoon && <span className="text-[9px] bg-yellow-900/50 text-yellow-500 px-1 rounded">WAIT</span>}
                       </div>
                       <div className="text-xs text-gray-500 mt-0.5 leading-snug">
                         {model.description}
@@ -85,13 +98,21 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModel, onSelectModel, onClearCh
           </div>
         </div>
 
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-4 border-t border-gray-800 space-y-2">
+          <button
+            onClick={onExportChat}
+            className="w-full flex items-center justify-center gap-2 p-3 text-sm font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded-lg transition-colors"
+          >
+            <Icons.Download />
+            Export Data (JSON)
+          </button>
+          
           <button
             onClick={onClearChat}
             className="w-full flex items-center justify-center gap-2 p-3 text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors"
           >
             <Icons.Trash />
-            Clear Conversation
+            Reset Protocol
           </button>
         </div>
       </div>

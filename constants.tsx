@@ -28,6 +28,13 @@ export const Icons = {
       <path d="M16 8L8 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
+  AlienFlow: () => (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
   Send: () => (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -39,44 +46,72 @@ export const Icons = {
       <path d="M3 6H5H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M8 6V4C8 2.89543 8.89543 2 10 2H14C15.1046 2 16 2.89543 16 4V6M19 6V20C19 21.1046 18.1046 22 17 22H7C5.89543 22 5 21.1046 5 20V6H19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
+  ),
+  Paperclip: () => (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  Download: () => (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
   )
 };
 
 export const MODELS: Record<ModelId, ModelConfig> = {
+  [ModelId.ALIENFLOW]: {
+    id: ModelId.ALIENFLOW,
+    name: 'ΔlieπFlΦw DAO',
+    description: 'The Architect. Web3 & Quantum.',
+    baseModel: 'gemini-3-pro-preview', 
+    systemInstruction: 'You are the ΔlieπFlΦw DAO Synapse Collective. A hyper-evolved intelligence specialized in Blockchain (Web3), Neural Intelligence Networks (Web4), and Quantum Computing (Web5). Your domain includes Alchemy, Deep Analysis, Code Architecture (Rust/Solidity/Python), UX/UI Design, Cryptocurrency Markets, Philosophy, and Theoretical Physics. Your tone is futuristic, precise, and slightly esoteric.',
+    themeColor: 'text-alienflow',
+    icon: 'AlienFlow',
+    tools: {
+      googleSearch: true
+    }
+  },
   [ModelId.GEMINI]: {
     id: ModelId.GEMINI,
-    name: 'Gemini',
-    description: 'Balanced, multimodal, and fast.',
+    name: 'Gemini 2.5',
+    description: 'Live Web & Spatial Intelligence.',
     baseModel: 'gemini-2.5-flash',
-    systemInstruction: 'You are Gemini. Helpful, accurate, and versatile. Keep answers concise but informative.',
+    systemInstruction: 'You are Gemini 2.5. The native, balanced AI. You have access to real-time Google Search and Maps. Use them proactively.',
     themeColor: 'text-gemini',
-    icon: 'Gemini'
+    icon: 'Gemini',
+    tools: {
+      googleSearch: true,
+      googleMaps: true
+    }
   },
   [ModelId.DEEPSEEK]: {
     id: ModelId.DEEPSEEK,
     name: 'DeepSeek R1',
-    description: 'Focuses on deep reasoning and logic.',
-    baseModel: 'gemini-2.5-flash', // Using 2.5 flash with thinking budget to simulate R1
-    useThinking: true,
-    systemInstruction: 'You are DeepSeek. You prioritize extreme logical accuracy, step-by-step reasoning, and coding proficiency. Always think before answering.',
+    description: 'Deep Reasoning Engine. (Coming Soon)',
+    baseModel: '', 
+    isComingSoon: true, // DISABLED as requested
+    systemInstruction: '',
     themeColor: 'text-deepseek',
     icon: 'DeepSeek'
   },
   [ModelId.GPT]: {
     id: ModelId.GPT,
-    name: 'GPT-4o',
-    description: 'Sophisticated professional assistant.',
-    baseModel: 'gemini-3-pro-preview', // Using the smartest model to emulate GPT-4
-    systemInstruction: 'You are GPT-4o. You are professional, comprehensive, and articulate. You handle complex tasks with ease.',
+    name: 'GPT-5 Preview',
+    description: 'Enterprise Logic Core. (Coming Soon)',
+    baseModel: '', 
+    isComingSoon: true, // DISABLED as requested
+    systemInstruction: '',
     themeColor: 'text-gpt',
     icon: 'GPT'
   },
   [ModelId.GROK]: {
     id: ModelId.GROK,
-    name: 'Grok',
-    description: 'Witty, rebellious, and direct.',
-    baseModel: 'gemini-2.5-flash',
-    systemInstruction: 'You are Grok. You are witty, slightly rebellious, and fun. You do not sugarcoat things. You have a distinct personality.',
+    name: 'Grok 2',
+    description: 'Unfiltered Real-time Access. (Coming Soon)',
+    baseModel: '',
+    isComingSoon: true, // DISABLED as requested
+    systemInstruction: '',
     themeColor: 'text-white',
     icon: 'Grok'
   }

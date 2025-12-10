@@ -1,5 +1,5 @@
 {
-  "name": "AITor Nexus",
-  "description": "A unified AI chat interface combining the capabilities of DeepSeek, Gemini, GPT and Grok into a single powerful application.",
+  "name": "AI Tor Nexus",
+  "description": "A unified AI chat interface combining the capabilities of Gemini, DeepSeek, GPT, and Grok personas into a single powerful application.",
   "requestFramePermissions": []
 }

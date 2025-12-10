@@ -4,7 +4,13 @@ export enum ModelId {
   GEMINI = 'gemini',
   DEEPSEEK = 'deepseek',
   GPT = 'gpt',
-  GROK = 'grok'
+  GROK = 'grok',
+  ALIENFLOW = 'alienflow'
+}
+
+export interface Attachment {
+  mimeType: string;
+  data: string; // Base64
 }
 
 export interface ChatMessage {
@@ -15,6 +21,7 @@ export interface ChatMessage {
   modelUsed?: ModelId; // To track which personality answered
   isThinking?: boolean; // For deepseek visualization
   thoughtProcess?: string; // Content of the thinking block
+  attachments?: Attachment[]; // For images/files
 }
 
 export interface ModelConfig {
@@ -26,4 +33,9 @@ export interface ModelConfig {
   themeColor: string;
   icon: string;
   useThinking?: boolean;
+  isComingSoon?: boolean; // New flag to disable models that lack specific APIs
+  tools?: {
+    googleSearch?: boolean;
+    googleMaps?: boolean;
+  };
 }

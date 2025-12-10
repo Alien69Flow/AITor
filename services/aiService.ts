@@ -3,34 +3,84 @@ import { MODELS } from '../constants';
 import { ModelId, ChatMessage } from '../types';
 
 // Initialize the client
-// Using process.env.API_KEY as strictly required by instructions
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export async function* streamResponse(
   history: ChatMessage[],
   newMessage: string,
-  modelId: ModelId
+  modelId: ModelId,
+  attachments: { mimeType: string; data: string }[] = []
 ) {
   const config = MODELS[modelId];
 
+  // If model is marked as coming soon, do not attempt request
+  if (config.isComingSoon) {
+    yield "Provider API Key Missing. Integration coming soon.";
+    return;
+  }
+
   // Map our internal chat history to the format expected by the SDK
-  // We only send previous messages, not the new one (which is sent in sendMessageStream)
-  const historyFormatted = history.map(msg => ({
-    role: msg.role === 'user' ? 'user' : 'model',
-    parts: [{ text: msg.text }]
-  }));
+  const historyFormatted = history.map(msg => {
+    const parts: any[] = [];
+    
+    // Add attachments if any exist in history
+    if (msg.attachments && msg.attachments.length > 0) {
+      msg.attachments.forEach(att => {
+        parts.push({
+          inlineData: {
+            mimeType: att.mimeType,
+            data: att.data
+          }
+        });
+      });
+    }
+
+    if (msg.text) {
+      parts.push({ text: msg.text });
+    }
+
+    return {
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: parts
+    };
+  });
+
+  // Prepare the content for the *current* message
+  let messageContent: string | any[] = newMessage;
+
+  if (attachments.length > 0) {
+    const parts: any[] = [];
+    attachments.forEach(att => {
+      parts.push({
+         inlineData: {
+           mimeType: att.mimeType,
+           data: att.data
+         }
+      });
+    });
+    if (newMessage) {
+      parts.push({ text: newMessage });
+    }
+    messageContent = parts;
+  }
 
   // Build the configuration
   const generationConfig: any = {
     systemInstruction: config.systemInstruction,
+    tools: [],
   };
 
-  // If simulate DeepSeek R1 behavior, enable thinking
+  // 1. Handle Thinking 
   if (config.useThinking) {
-    generationConfig.thinkingConfig = { thinkingBudget: 4096 }; 
-  } else {
-    // Disable thinking for others to ensure speed/personality match
-    generationConfig.thinkingConfig = { thinkingBudget: 0 };
+    generationConfig.thinkingConfig = { thinkingBudget: 8192 }; 
+  }
+
+  // 2. Handle Tools (Search, Maps)
+  if (config.tools) {
+    const toolsList: any[] = [];
+    if (config.tools.googleSearch) toolsList.push({ googleSearch: {} });
+    if (config.tools.googleMaps) toolsList.push({ googleMaps: {} });
+    if (toolsList.length > 0) generationConfig.tools = toolsList;
   }
 
   // Create chat session
@@ -41,11 +91,14 @@ export async function* streamResponse(
   });
 
   try {
-    const resultStream = await chat.sendMessageStream({ message: newMessage });
+    // Send message. 
+    // If we have just text, sending it as a string is the safest and most compliant way.
+    // If we have multimodal parts, we send the array.
+    const resultStream = await chat.sendMessageStream({ 
+      message: messageContent 
+    });
 
     for await (const chunk of resultStream) {
-      // The chunk is a GenerateContentResponse
-      // We extract text directly
       const text = chunk.text;
       if (text) {
         yield text;
@@ -53,6 +106,6 @@ export async function* streamResponse(
     }
   } catch (error) {
     console.error("Error in streamResponse:", error);
-    yield "Error: Unable to generate response. Please try again.";
+    yield "\n\n*[System Error: Unable to connect to the model or tool use failed. Please try again.]*";
   }
 }

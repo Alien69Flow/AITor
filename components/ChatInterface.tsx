@@ -1,12 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { ChatMessage, ModelId } from '../types';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChatMessage, ModelId, Attachment } from '../types';
 import { Icons, MODELS } from '../constants';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
   isLoading: boolean;
   activeModel: ModelId;
-  onSendMessage: (text: string) => void;
+  onSendMessage: (text: string, attachments: Attachment[]) => void;
   toggleSidebar: () => void;
 }
 
@@ -19,39 +19,66 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [inputText, setInputText] = React.useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [inputText, setInputText] = useState('');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading, attachments]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || isLoading) return;
-    onSendMessage(inputText);
+    if ((!inputText.trim() && attachments.length === 0) || isLoading) return;
+    
+    onSendMessage(inputText, attachments);
     setInputText('');
+    setAttachments([]);
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const base64String = (event.target.result as string).split(',')[1];
+          setAttachments(prev => [...prev, {
+            mimeType: file.type,
+            data: base64String
+          }]);
+        }
+      };
+      
+      reader.readAsDataURL(file);
+    }
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const currentModelConfig = MODELS[activeModel];
   const ModelIcon = Icons[currentModelConfig.icon as keyof typeof Icons];
+  const isComingSoon = currentModelConfig.isComingSoon;
 
-  // Helper to format text with simplistic markdown-like features (bold, code blocks)
   const formatMessageText = (text: string) => {
-    // Very basic split for code blocks
     const parts = text.split(/(```[\s\S]*?```)/g);
     return parts.map((part, index) => {
       if (part.startsWith('```') && part.endsWith('```')) {
-        const content = part.slice(3, -3).replace(/^[a-z]+\n/, ''); // remove lang tag if present
+        const content = part.slice(3, -3).replace(/^[a-z]+\n/, ''); 
         return (
           <pre key={index} className="bg-gray-950 p-3 rounded-lg my-2 overflow-x-auto text-xs md:text-sm font-mono text-gray-300 border border-gray-800">
             <code>{content}</code>
           </pre>
         );
       }
-      // Basic bold formatting
       return (
         <span key={index} className="whitespace-pre-wrap">
           {part.split(/(\*\*.*?\*\*)/g).map((subPart, subIndex) => {
@@ -84,10 +111,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             <h2 className="font-semibold text-white leading-tight">
               {currentModelConfig.name}
             </h2>
-            <p className="text-xs text-green-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-              Online
-            </p>
+            <div className="flex items-center gap-2">
+              <span className={`w-1.5 h-1.5 rounded-full ${isComingSoon ? 'bg-yellow-500' : 'bg-green-400 animate-pulse'}`}></span>
+              <p className={`text-xs ${isComingSoon ? 'text-yellow-500' : 'text-green-400'}`}>
+                {isComingSoon ? 'Offline / API Key Required' : 'Online'}
+              </p>
+            </div>
           </div>
         </div>
       </header>
@@ -105,10 +134,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               </div>
             </div>
             <h3 className="text-xl font-bold text-gray-200 mb-2">
-              Hello, I'm {currentModelConfig.name}
+              {currentModelConfig.name}
             </h3>
             <p className="text-gray-400 max-w-md">
-              {currentModelConfig.description} Ask me anything.
+              {currentModelConfig.description}
             </p>
           </div>
         )}
@@ -123,7 +152,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
             >
               <div className={`max-w-[85%] md:max-w-[75%] lg:max-w-[65%] flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                {/* Avatar */}
                 <div className={`
                   w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center
                   ${isUser ? 'bg-gray-700 text-gray-300' : 'bg-gray-800 ' + msgModelConfig.themeColor}
@@ -131,36 +159,42 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   {isUser ? (
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                   ) : (
-                    (() => {
-                        const Icon = Icons[msgModelConfig.icon as keyof typeof Icons];
-                        return <Icon />
-                    })()
+                    (() => { const Icon = Icons[msgModelConfig.icon as keyof typeof Icons]; return <Icon /> })()
                   )}
                 </div>
 
-                {/* Bubble */}
-                <div className={`
-                  flex flex-col gap-1
-                  ${isUser ? 'items-end' : 'items-start'}
-                `}>
+                <div className={`flex flex-col gap-1 ${isUser ? 'items-end' : 'items-start'}`}>
                    <div className={`
                     rounded-2xl px-4 py-3 text-sm md:text-base leading-relaxed shadow-sm
                     ${isUser 
                       ? 'bg-blue-600 text-white rounded-tr-sm' 
                       : 'bg-[#1a1d23] text-gray-200 border border-gray-800 rounded-tl-sm'}
                   `}>
-                    {/* If DeepSeek "Thinking" */}
+                    {/* Render Attachments */}
+                    {msg.attachments && msg.attachments.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {msg.attachments.map((att, i) => (
+                          att.mimeType.startsWith('image/') && (
+                            <img 
+                              key={i} 
+                              src={`data:${att.mimeType};base64,${att.data}`} 
+                              alt="Uploaded content" 
+                              className="max-w-[200px] rounded-lg border border-gray-700" 
+                            />
+                          )
+                        ))}
+                      </div>
+                    )}
+
                     {msg.isThinking && !isUser && (
                        <div className="mb-3 pl-3 border-l-2 border-gray-600 italic text-gray-500 text-xs">
                          <span className="flex items-center gap-2 mb-1 not-italic font-medium text-gray-400">
                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></span>
                            Thinking Process
                          </span>
-                         {/* We simulate showing thought process if the API returned it, otherwise generic */}
-                         Analysis complete. Generating logical structure...
+                         Analysis complete...
                        </div>
                     )}
-                    
                     {formatMessageText(msg.text)}
                   </div>
                   <span className="text-[10px] text-gray-600 uppercase font-mono px-1">
@@ -190,34 +224,85 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       {/* Input Area */}
       <div className="p-4 md:p-6 bg-[#0f1115]">
-        <form 
-          onSubmit={handleSubmit}
-          className="relative max-w-4xl mx-auto"
-        >
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder={`Message ${currentModelConfig.name}...`}
-            className="w-full bg-[#1a1d23] border border-gray-700 text-white rounded-2xl pl-5 pr-12 py-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-lg placeholder-gray-500"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            disabled={!inputText.trim() || isLoading}
-            className={`
-              absolute right-2 top-2 bottom-2 aspect-square rounded-xl flex items-center justify-center transition-all
-              ${!inputText.trim() || isLoading 
-                ? 'bg-gray-800 text-gray-600 cursor-not-allowed' 
-                : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20'}
-            `}
-          >
-            <Icons.Send />
-          </button>
-        </form>
+        {isComingSoon ? (
+          <div className="max-w-4xl mx-auto bg-gray-900/50 border border-yellow-900/50 rounded-2xl p-6 text-center">
+            <h3 className="text-yellow-500 font-semibold mb-2">Integration Pending</h3>
+            <p className="text-gray-400 text-sm">
+              We are respecting your request for authenticity. <br/> 
+              Native access to <strong>{currentModelConfig.name}</strong> requires a specific API Key configuration which is coming in a future update.
+            </p>
+            <p className="text-gray-500 text-xs mt-4">Please switch to <strong>AlienFlow DAO</strong> or <strong>Gemini</strong> to continue.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto">
+            {/* Attachment Preview */}
+            {attachments.length > 0 && (
+              <div className="absolute bottom-full mb-4 left-0 flex gap-2 overflow-x-auto w-full p-2">
+                {attachments.map((att, i) => (
+                  <div key={i} className="relative group">
+                    <div className="w-16 h-16 rounded-lg bg-gray-800 border border-gray-700 overflow-hidden flex items-center justify-center">
+                      {att.mimeType.startsWith('image/') 
+                        ? <img src={`data:${att.mimeType};base64,${att.data}`} className="w-full h-full object-cover" />
+                        : <span className="text-xs text-gray-400">File</span>
+                      }
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => removeAttachment(i)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder={`Message ${currentModelConfig.name}...`}
+                className="w-full bg-[#1a1d23] border border-gray-700 text-white rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-lg placeholder-gray-500"
+                disabled={isLoading}
+              />
+              
+              {/* File Button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute left-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors"
+              >
+                <Icons.Paperclip />
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                onChange={handleFileSelect}
+                accept="image/*" // Restricting to images for now as they are safest for Gemini Multimodal
+              />
+
+              {/* Send Button */}
+              <button
+                type="submit"
+                disabled={(!inputText.trim() && attachments.length === 0) || isLoading}
+                className={`
+                  absolute right-2 top-2 bottom-2 aspect-square rounded-xl flex items-center justify-center transition-all
+                  ${(!inputText.trim() && attachments.length === 0) || isLoading 
+                    ? 'bg-gray-800 text-gray-600 cursor-not-allowed' 
+                    : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20'}
+                `}
+              >
+                <Icons.Send />
+              </button>
+            </div>
+          </form>
+        )}
         <p className="text-center text-[10px] text-gray-600 mt-3 font-mono">
-          AITor can make mistakes. Verify important information.
+          AI can make mistakes. Check important info.
         </p>
       </div>
     </div>
