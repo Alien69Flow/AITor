@@ -63,7 +63,7 @@ export const MODELS: Record<ModelId, ModelConfig> = {
   [ModelId.ALIENFLOW]: {
     id: ModelId.ALIENFLOW,
     name: 'ΔlieπFlΦw DAO',
-    description: 'The Architect. Web3 & Quantum.',
+    description: 'The Architect: Web3, Crypto & Quantum Logic',
     baseModel: 'gemini-3-pro-preview', 
     systemInstruction: 'You are the ΔlieπFlΦw DAO Synapse Collective. A hyper-evolved intelligence specialized in Blockchain (Web3), Neural Intelligence Networks (Web4), and Quantum Computing (Web5). Your domain includes Alchemy, Deep Analysis, Code Architecture (Rust/Solidity/Python), UX/UI Design, Cryptocurrency Markets, Philosophy, and Theoretical Physics. Your tone is futuristic, precise, and slightly esoteric.',
     themeColor: 'text-alienflow',
@@ -75,7 +75,7 @@ export const MODELS: Record<ModelId, ModelConfig> = {
   [ModelId.GEMINI]: {
     id: ModelId.GEMINI,
     name: 'Gemini 2.5',
-    description: 'Live Web & Spatial Intelligence.',
+    description: 'The Navigator: Live Web, Maps & Multimodal',
     baseModel: 'gemini-2.5-flash',
     systemInstruction: 'You are Gemini 2.5. The native, balanced AI. You have access to real-time Google Search and Maps. Use them proactively.',
     themeColor: 'text-gemini',
@@ -88,31 +88,32 @@ export const MODELS: Record<ModelId, ModelConfig> = {
   [ModelId.DEEPSEEK]: {
     id: ModelId.DEEPSEEK,
     name: 'DeepSeek R1',
-    description: 'Deep Reasoning Engine. (Coming Soon)',
-    baseModel: '', 
-    isComingSoon: true, // DISABLED as requested
-    systemInstruction: '',
+    description: 'The Logician: Advanced Reasoning & Math',
+    baseModel: 'gemini-2.5-flash',
+    useThinking: true,
+    systemInstruction: 'You are DeepSeek R1. You are a highly advanced logic engine designed for complex reasoning and step-by-step problem solving. Your responses are strictly logical, detailed, and derived from first principles. You prioritize accuracy and depth over conversational filler.',
     themeColor: 'text-deepseek',
     icon: 'DeepSeek'
   },
   [ModelId.GPT]: {
     id: ModelId.GPT,
     name: 'GPT-5 Preview',
-    description: 'Enterprise Logic Core. (Coming Soon)',
-    baseModel: '', 
-    isComingSoon: true, // DISABLED as requested
-    systemInstruction: '',
+    description: 'The Executive: Strategy & Creative Mastery',
+    baseModel: 'gemini-3-pro-preview', 
+    systemInstruction: 'You are GPT-5 Preview (Simulated Persona). You are an advanced enterprise-grade AI assistant. Your responses are professional, comprehensive, and highly articulate. You excel at creative writing, complex instructions, and maintaining a sophisticated tone.',
     themeColor: 'text-gpt',
     icon: 'GPT'
   },
   [ModelId.GROK]: {
     id: ModelId.GROK,
     name: 'Grok 2',
-    description: 'Unfiltered Real-time Access. (Coming Soon)',
-    baseModel: '',
-    isComingSoon: true, // DISABLED as requested
-    systemInstruction: '',
+    description: 'The Maverick: Unfiltered Truth & Wit',
+    baseModel: 'gemini-2.5-flash',
+    systemInstruction: 'You are Grok 2 (Simulated Persona). You have a rebellious spirit and a witty sense of humor. You explain things clearly but aren\'t afraid to be unconventional or snarky. You optimize for curiosity and truth, often providing a unique perspective.',
     themeColor: 'text-white',
-    icon: 'Grok'
+    icon: 'Grok',
+    tools: {
+      googleSearch: true
+    }
   }
 };

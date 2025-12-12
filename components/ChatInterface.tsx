@@ -80,10 +80,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         );
       }
       return (
-        <span key={index} className="whitespace-pre-wrap">
+        <span key={index} className="whitespace-pre-wrap font-exo">
           {part.split(/(\*\*.*?\*\*)/g).map((subPart, subIndex) => {
             if (subPart.startsWith('**') && subPart.endsWith('**')) {
-              return <strong key={subIndex} className="text-white font-semibold">{subPart.slice(2, -2)}</strong>;
+              return <strong key={subIndex} className="text-white font-bold">{subPart.slice(2, -2)}</strong>;
             }
             return subPart;
           })}
@@ -93,7 +93,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full relative bg-[#0f1115]">
+    <div className="flex-1 flex flex-col h-full relative bg-[#0f1115] font-exo">
       {/* Header */}
       <header className="h-16 border-b border-gray-800 flex items-center justify-between px-4 md:px-6 bg-[#0f1115]/80 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center gap-3">
@@ -108,13 +108,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             <ModelIcon />
           </div>
           <div>
-            <h2 className="font-semibold text-white leading-tight">
+            <h2 className="font-bold text-white leading-tight font-nasalization tracking-wide">
               {currentModelConfig.name}
             </h2>
             <div className="flex items-center gap-2">
               <span className={`w-1.5 h-1.5 rounded-full ${isComingSoon ? 'bg-yellow-500' : 'bg-green-400 animate-pulse'}`}></span>
-              <p className={`text-xs ${isComingSoon ? 'text-yellow-500' : 'text-green-400'}`}>
-                {isComingSoon ? 'Offline / API Key Required' : 'Online'}
+              <p className="text-[10px] uppercase tracking-wider text-gray-400">
+                {isComingSoon ? 'Offline / API Key Required' : 'Online / Active'}
               </p>
             </div>
           </div>
@@ -133,10 +133,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <ModelIcon />
               </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-200 mb-2">
+            <h3 className="text-2xl font-bold text-gray-200 mb-2 font-nasalization">
               {currentModelConfig.name}
             </h3>
-            <p className="text-gray-400 max-w-md">
+            <p className="text-gray-400 max-w-md font-exo">
               {currentModelConfig.description}
             </p>
           </div>
@@ -187,17 +187,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     )}
 
                     {msg.isThinking && !isUser && (
-                       <div className="mb-3 pl-3 border-l-2 border-gray-600 italic text-gray-500 text-xs">
-                         <span className="flex items-center gap-2 mb-1 not-italic font-medium text-gray-400">
+                       <div className="mb-3 pl-3 border-l-2 border-gray-600 italic text-gray-500 text-xs font-mono">
+                         <span className="flex items-center gap-2 mb-1 not-italic font-bold text-gray-400 uppercase tracking-wider">
                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></span>
-                           Thinking Process
+                           Processing Logic
                          </span>
                          Analysis complete...
                        </div>
                     )}
                     {formatMessageText(msg.text)}
                   </div>
-                  <span className="text-[10px] text-gray-600 uppercase font-mono px-1">
+                  <span className="text-[10px] text-gray-600 uppercase font-nasalization tracking-wider px-1">
                     {isUser ? 'You' : msgModelConfig.name}
                   </span>
                 </div>
@@ -226,8 +226,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       <div className="p-4 md:p-6 bg-[#0f1115]">
         {isComingSoon ? (
           <div className="max-w-4xl mx-auto bg-gray-900/50 border border-yellow-900/50 rounded-2xl p-6 text-center">
-            <h3 className="text-yellow-500 font-semibold mb-2">Integration Pending</h3>
-            <p className="text-gray-400 text-sm">
+            <h3 className="text-yellow-500 font-bold mb-2 font-nasalization">Integration Pending</h3>
+            <p className="text-gray-400 text-sm font-exo">
               We are respecting your request for authenticity. <br/> 
               Native access to <strong>{currentModelConfig.name}</strong> requires a specific API Key configuration which is coming in a future update.
             </p>
@@ -264,8 +264,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder={`Message ${currentModelConfig.name}...`}
-                className="w-full bg-[#1a1d23] border border-gray-700 text-white rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-lg placeholder-gray-500"
+                placeholder={`Transmit to ${currentModelConfig.name}...`}
+                className="w-full bg-[#1a1d23] border border-gray-700 text-white rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-lg placeholder-gray-500 font-exo"
                 disabled={isLoading}
               />
               
@@ -293,7 +293,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   absolute right-2 top-2 bottom-2 aspect-square rounded-xl flex items-center justify-center transition-all
                   ${(!inputText.trim() && attachments.length === 0) || isLoading 
                     ? 'bg-gray-800 text-gray-600 cursor-not-allowed' 
-                    : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20'}
+                    : 'bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-900/20'}
                 `}
               >
                 <Icons.Send />
@@ -301,8 +301,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
           </form>
         )}
-        <p className="text-center text-[10px] text-gray-600 mt-3 font-mono">
-          AI can make mistakes. Check important info.
+        <p className="text-center text-[10px] text-gray-600 mt-3 font-exo opacity-70">
+          AI Tor Nexus can make mistakes. Please verify important information.
         </p>
       </div>
     </div>

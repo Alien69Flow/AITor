@@ -7,7 +7,6 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export async function* streamResponse(
   history: ChatMessage[],
-  newMessage: string,
   modelId: ModelId,
   attachments: { mimeType: string; data: string }[] = []
 ) {
@@ -15,12 +14,17 @@ export async function* streamResponse(
 
   // If model is marked as coming soon, do not attempt request
   if (config.isComingSoon) {
-    yield "Provider API Key Missing. Integration coming soon.";
+    yield "⚠️ **ACCESS DENIED**\n\nThis neural node is currently locked or in preview mode. Native API access requires a specific configuration not yet active.\n\nPlease switch to **AlienFlow DAO** or **Gemini 2.5** to continue.";
     return;
   }
 
+  // The last message in history is the user's new message. 
+  // We need to separate it to build the request correctly.
+  const userMessage = history[history.length - 1];
+  const previousHistory = history.slice(0, history.length - 1);
+
   // Map our internal chat history to the format expected by the SDK
-  const historyFormatted = history.map(msg => {
+  const historyFormatted = previousHistory.map(msg => {
     const parts: any[] = [];
     
     // Add attachments if any exist in history
@@ -46,7 +50,7 @@ export async function* streamResponse(
   });
 
   // Prepare the content for the *current* message
-  let messageContent: string | any[] = newMessage;
+  let messageContent: string | any[] = userMessage.text || '';
 
   if (attachments.length > 0) {
     const parts: any[] = [];
@@ -58,8 +62,8 @@ export async function* streamResponse(
          }
       });
     });
-    if (newMessage) {
-      parts.push({ text: newMessage });
+    if (userMessage.text) {
+      parts.push({ text: userMessage.text });
     }
     messageContent = parts;
   }
@@ -92,8 +96,6 @@ export async function* streamResponse(
 
   try {
     // Send message. 
-    // If we have just text, sending it as a string is the safest and most compliant way.
-    // If we have multimodal parts, we send the array.
     const resultStream = await chat.sendMessageStream({ 
       message: messageContent 
     });
