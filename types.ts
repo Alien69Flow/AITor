@@ -8,9 +8,24 @@ export enum ModelId {
   ALIENFLOW = 'alienflow'
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
 export interface Attachment {
   mimeType: string;
   data: string; // Base64
+}
+
+export interface MessageAction {
+  label: string;
+  subLabel?: string;
+  type: 'select-model' | 'system-details';
+  payload: ModelId | string;
+  icon?: string;
 }
 
 export interface ChatMessage {
@@ -22,6 +37,7 @@ export interface ChatMessage {
   isThinking?: boolean; // For deepseek visualization
   thoughtProcess?: string; // Content of the thinking block
   attachments?: Attachment[]; // For images/files
+  actions?: MessageAction[]; // For interactive buttons
 }
 
 export interface ModelConfig {
